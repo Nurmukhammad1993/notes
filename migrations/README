@@ -1,0 +1,6 @@
+Alembic migrations live in this folder.
+
+Common commands:
+- alembic upgrade head
+- alembic revision --autogenerate -m "message"
+- alembic downgrade -1

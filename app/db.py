@@ -35,9 +35,5 @@ if not DATABASE_URL:
 engine = create_engine(_normalize_database_url(DATABASE_URL), pool_pre_ping=True)
 
 
-def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
-
-
 def get_session() -> Session:
     return Session(engine)

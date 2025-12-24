@@ -26,6 +26,12 @@ DATABASE_URL=postgresql+psycopg://notes:notespass@localhost:5433/notes
 
 4) Запустить сервер:
 
+Перед первым запуском (и после изменений схемы) применить миграции:
+
+```powershell
+C:/Users/nurmuhammad/Projects/Uzinfocom/my_project/.venv/Scripts/python.exe -m scripts.migrate
+```
+
 ```powershell
 uvicorn app.main:app --reload
 ```
@@ -39,3 +45,29 @@ uvicorn app.main:app --reload
 - Удаление
 
 База данных: PostgreSQL (настройка через `DATABASE_URL`).
+
+## Миграции (Alembic)
+
+- Создать новую миграцию (после изменения моделей):
+
+```powershell
+alembic revision --autogenerate -m "message"
+```
+
+- Применить миграции:
+
+```powershell
+alembic upgrade head
+```
+
+Если база уже существовала и таблицы были созданы раньше без Alembic, то один раз нужно сделать baseline:
+
+```powershell
+alembic stamp head
+```
+
+## DigitalOcean App Platform
+
+Чтобы миграции применялись автоматически при деплое, в Run Command можно поставить:
+
+`python -m scripts.migrate && uvicorn app.main:app --host 0.0.0.0 --port $PORT`

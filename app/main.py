@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
@@ -8,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
-from app.db import init_db, get_session
+from app.db import get_session
 from app.models import Note
 
 app = FastAPI(title="Notes", version="1.0.0")
@@ -17,12 +18,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 
-@app.on_event("startup")
-def on_startup() -> None:
-    init_db()
-
-
-def session_dep() -> Session:
+def session_dep() -> Generator[Session, None, None]:
     with get_session() as session:
         yield session
 
