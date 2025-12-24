@@ -123,6 +123,13 @@
     if (params.get("updated") === "1") toast("Заметка обновлена", "success");
     if (params.get("deleted") === "1") toast("Заметка удалена", "danger");
 
+    if (params.has("imported")) {
+      const n = Number(params.get("imported"));
+      if (Number.isFinite(n) && n > 0) toast(`Импортировано: ${n}`, "success");
+      else toast("Импорт: нет новых заметок", "info");
+    }
+    if (params.get("import_error") === "1") toast("Импорт не удался (проверь JSON)", "danger");
+
     if (params.get("pinned") === "1") toast("Закреплено", "success");
     if (params.get("unpinned") === "1") toast("Откреплено", "info");
     if (params.get("archived_action") === "1") toast("Перемещено в архив", "info");
@@ -135,7 +142,9 @@
       params.has("pinned") ||
       params.has("unpinned") ||
       params.has("archived_action") ||
-      params.has("unarchived_action")
+      params.has("unarchived_action") ||
+      params.has("imported") ||
+      params.has("import_error")
     ) {
       // Clean URL without reloading
       const url = new URL(window.location.href);
@@ -146,8 +155,26 @@
       url.searchParams.delete("unpinned");
       url.searchParams.delete("archived_action");
       url.searchParams.delete("unarchived_action");
+      url.searchParams.delete("imported");
+      url.searchParams.delete("import_error");
       window.history.replaceState({}, "", url);
     }
+  }
+
+  function initImportJson() {
+    const btn = qs("button[data-import-json='1']");
+    const form = qs("#import-json-form");
+    const fileInput = qs("#import-json-file");
+    if (!btn || !form || !fileInput) return;
+
+    btn.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+      if (!fileInput.files || fileInput.files.length === 0) return;
+      form.submit();
+    });
   }
 
   function initLocalTime() {
@@ -225,5 +252,6 @@
     initLocalTime();
     initCopyButtons();
     initClearNewNote();
+    initImportJson();
   });
 })();

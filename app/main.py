@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from urllib.parse import parse_qsl, urlencode, urlparse
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -132,6 +132,8 @@ def export_notes_json(request: Request, session: Session = Depends(session_dep))
             "id": n.id,
             "title": n.title,
             "content": n.content,
+            "pinned": bool(n.pinned),
+            "archived": bool(n.archived),
             "created_at": n.created_at.isoformat() + "Z",
             "updated_at": n.updated_at.isoformat() + "Z",
         }
@@ -142,6 +144,95 @@ def export_notes_json(request: Request, session: Session = Depends(session_dep))
         content={"notes": payload},
         headers={"Content-Disposition": "attachment; filename=notes.json"},
     )
+
+
+def _parse_iso_datetime(value: object) -> datetime | None:
+    if not value:
+        return None
+    if not isinstance(value, str):
+        return None
+    raw = value.strip()
+    if not raw:
+        return None
+    # Export uses trailing 'Z'. datetime.fromisoformat doesn't accept it.
+    if raw.endswith("Z"):
+        raw = raw[:-1]
+    try:
+        dt = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    # Normalize to naive UTC-ish datetime for DB
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+@app.post("/import/json")
+async def import_notes_json(
+    request: Request,
+    file: UploadFile = File(...),
+    session: Session = Depends(session_dep),
+):
+    user = _require_user(request, session)
+
+    if not file.filename or not file.filename.lower().endswith(".json"):
+        return RedirectResponse(url="/?import_error=1", status_code=303)
+
+    try:
+        raw_bytes = await file.read()
+        text = raw_bytes.decode("utf-8")
+    except Exception:
+        return RedirectResponse(url="/?import_error=1", status_code=303)
+
+    try:
+        import json
+
+        data = json.loads(text)
+    except Exception:
+        return RedirectResponse(url="/?import_error=1", status_code=303)
+
+    notes_list = None
+    if isinstance(data, dict):
+        notes_list = data.get("notes")
+
+    if not isinstance(notes_list, list):
+        return RedirectResponse(url="/?import_error=1", status_code=303)
+
+    # Basic safety limit
+    if len(notes_list) > 2000:
+        return RedirectResponse(url="/?import_error=1", status_code=303)
+
+    now = datetime.utcnow()
+    imported = 0
+    for item in notes_list:
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "").strip()
+        if not title:
+            continue
+        if len(title) > 200:
+            title = title[:200]
+        content = str(item.get("content") or "")
+
+        created_at = _parse_iso_datetime(item.get("created_at")) or now
+        updated_at = _parse_iso_datetime(item.get("updated_at")) or created_at
+        pinned = bool(item.get("pinned"))
+        archived = bool(item.get("archived"))
+
+        note = Note(
+            user_id=user.id,
+            title=title,
+            content=content,
+            pinned=pinned,
+            archived=archived,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
+        session.add(note)
+        imported += 1
+
+    session.commit()
+    return RedirectResponse(url=f"/?imported={imported}", status_code=303)
 
 
 @app.post("/notes")
