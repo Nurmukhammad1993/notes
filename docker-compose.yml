@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: notes-postgres
+    environment:
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: notespass
+      POSTGRES_DB: notes
+    ports:
+      - "5433:5432"
+    volumes:
+      - notes_pgdata:/var/lib/postgresql/data
+
+volumes:
+  notes_pgdata:

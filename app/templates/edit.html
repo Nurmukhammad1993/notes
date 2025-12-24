@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="rounded-3xl border border-slate-200 bg-white/70 p-5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/40">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold">Редактирование</h2>
+        <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">
+          Заметка #{{ note.id }} ·
+          Обновлено: <time data-utc="{{ note.updated_at.isoformat() }}Z">{{ note.updated_at.strftime('%Y-%m-%d %H:%M') }}</time>
+        </p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Ctrl+Enter для сохранения</p>
+      </div>
+      <form method="post" action="/notes/{{ note.id }}/delete" onsubmit="return confirm('Удалить заметку?');">
+        <button type="submit" class="rounded-2xl bg-rose-600/90 px-4 py-2 text-sm font-semibold hover:bg-rose-600">
+          <span class="inline-flex items-center gap-2">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M19 6l-1 14H6L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+            </svg>
+            Удалить
+          </span>
+        </button>
+      </form>
+    </div>
+
+    <form class="mt-5 grid gap-3" method="post" action="/notes/{{ note.id }}" data-ctrl-enter-submit="1">
+      <div>
+        <label class="text-xs font-medium text-slate-700 dark:text-slate-300">Заголовок</label>
+        <input
+          name="title"
+          required
+          maxlength="200"
+          value="{{ note.title }}"
+          class="mt-1 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent focus:border-slate-300 focus:ring-indigo-500/30 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-indigo-500/40"
+        />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-700 dark:text-slate-300">Текст</label>
+        <textarea
+          name="content"
+          rows="10"
+          data-autosize="1"
+          class="mt-1 w-full resize-none rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent focus:border-slate-300 focus:ring-indigo-500/30 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-indigo-500/40"
+        >{{ note.content }}</textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <a href="/" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-950/60">Отмена</a>
+        <button class="rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500" type="submit">
+          <span class="inline-flex items-center gap-2">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+              <path d="M17 21v-8H7v8" />
+              <path d="M7 3v5h8" />
+            </svg>
+            Сохранить
+          </span>
+        </button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

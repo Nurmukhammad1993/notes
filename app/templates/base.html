@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title if title else "Заметки" }}</title>
+    <script>
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = { darkMode: "class" };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/favicon.svg" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = stored || (prefersDark ? "dark" : "light");
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/20"></div>
+      <div class="absolute -bottom-24 right-10 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10"></div>
+    </div>
+
+    <div class="mx-auto max-w-5xl px-4 py-10">
+      <header class="mb-8">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="grid h-11 w-11 place-items-center rounded-2xl border border-slate-200 bg-white/60 backdrop-blur dark:border-slate-800 dark:bg-slate-900/60">
+              <span class="text-sm font-semibold text-indigo-700 dark:text-indigo-200">N</span>
+            </div>
+            <div>
+              <h1 class="text-xl font-semibold tracking-tight">Заметки</h1>
+              <p class="mt-0.5 text-xs text-slate-600 dark:text-slate-300">Локально · SQLite · быстро</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a
+              href="/export/json"
+              class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900"
+              title="Экспортировать все заметки в JSON"
+            >
+              <span class="inline-flex items-center gap-2">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <path d="M7 10l5 5 5-5" />
+                  <path d="M12 15V3" />
+                </svg>
+                Экспорт
+              </span>
+            </a>
+            <button
+              id="theme-toggle"
+              type="button"
+              class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900"
+              title="Переключить тему"
+            >
+              <span class="inline-flex items-center gap-2">
+                <svg data-theme-icon="moon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.6A9 9 0 1 1 11.4 3a7 7 0 0 0 9.6 9.6Z" />
+                </svg>
+                <svg data-theme-icon="sun" class="hidden h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                </svg>
+                <span id="theme-toggle-label">Тема</span>
+              </span>
+            </button>
+            <a
+              href="/"
+              class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900"
+            >Главная</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="mt-10 text-xs text-slate-500 dark:text-slate-400">
+        FastAPI · SQLModel · Tailwind CDN
+      </footer>
+    </div>
+
+    <div id="toast-host" class="fixed bottom-4 right-4 z-50 flex w-[calc(100%-2rem)] flex-col gap-2 sm:w-auto"></div>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
