@@ -1,6 +1,6 @@
 # FastAPI Notes
 
-Небольшое приложение для заметок (SQLite + красивый UI на Tailwind CDN).
+Небольшое приложение для заметок (PostgreSQL + красивый UI на Tailwind CDN).
 
 ## Запуск (Windows / PowerShell)
 
@@ -12,7 +12,19 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-2) Запустить сервер:
+2) Поднять PostgreSQL (Docker):
+
+```powershell
+docker compose up -d
+```
+
+3) Убедиться, что в `.env` задан `DATABASE_URL` (пример):
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://notes:notespass@localhost:5433/notes
+```
+
+4) Запустить сервер:
 
 ```powershell
 uvicorn app.main:app --reload
@@ -26,4 +38,4 @@ uvicorn app.main:app --reload
 - Редактирование
 - Удаление
 
-База данных создаётся автоматически: `app/data/notes.db`
+База данных: PostgreSQL (настройка через `DATABASE_URL`).
