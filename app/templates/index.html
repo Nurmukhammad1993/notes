@@ -61,9 +61,39 @@
     </section>
 
     <section class="lg:col-span-3">
-      <div class="flex items-baseline justify-between">
-        <h2 class="text-base font-semibold">Мои заметки</h2>
-        <div class="text-xs text-slate-500 dark:text-slate-400">{{ notes|length }} шт.</div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div class="flex items-baseline justify-between sm:block">
+          <h2 class="text-base font-semibold">{{ "Архив" if archived_view else "Мои заметки" }}</h2>
+          <div class="mt-1 text-xs text-slate-500">{{ notes|length }} шт.</div>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <form method="get" action="/" class="flex items-center gap-2">
+            {% if archived_view %}
+              <input type="hidden" name="archived" value="1" />
+            {% endif %}
+            <input
+              name="q"
+              value="{{ q }}"
+              placeholder="Поиск…"
+              class="w-full rounded-2xl border border-slate-200 bg-white/60 px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent focus:border-slate-300 focus:ring-indigo-500/30 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-indigo-500/40 sm:w-64"
+            />
+            <button type="submit" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">Найти</button>
+            {% if q %}
+              {% if archived_view %}
+                <a href="/?archived=1" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">Сброс</a>
+              {% else %}
+                <a href="/" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">Сброс</a>
+              {% endif %}
+            {% endif %}
+          </form>
+
+          {% if archived_view %}
+            <a href="/{{ ('?q=' ~ q|urlencode) if q else '' }}" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">Активные</a>
+          {% else %}
+            <a href="/?archived=1{{ ('&q=' ~ q|urlencode) if q else '' }}" class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900">Архив</a>
+          {% endif %}
+        </div>
       </div>
 
       {% if notes %}
@@ -76,8 +106,52 @@
                   <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Обновлено: <time data-utc="{{ n.updated_at.isoformat() }}Z">{{ n.updated_at.strftime('%Y-%m-%d %H:%M') }}</time>
                   </div>
+                  {% if n.pinned %}
+                    <div class="mt-2 inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50/60 px-3 py-1 text-xs font-medium text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 9l7 7-4 4-7-7" />
+                        <path d="M3 21l6-6" />
+                        <path d="M8 8l8 8" />
+                      </svg>
+                      Закреплено
+                    </div>
+                  {% endif %}
                 </div>
                 <div class="flex shrink-0 items-center gap-2">
+                  <form method="post" action="/notes/{{ n.id }}/pin">
+                    <button
+                      type="submit"
+                      class="rounded-2xl border border-slate-200 bg-white/60 px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-white dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100 dark:hover:bg-slate-950/60"
+                      title="{{ 'Открепить' if n.pinned else 'Закрепить' }}"
+                    >
+                      <span class="inline-flex items-center gap-2">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 9l7 7-4 4-7-7" />
+                          <path d="M3 21l6-6" />
+                          <path d="M8 8l8 8" />
+                        </svg>
+                        {{ 'Открепить' if n.pinned else 'Закрепить' }}
+                      </span>
+                    </button>
+                  </form>
+
+                  <form method="post" action="/notes/{{ n.id }}/archive">
+                    <button
+                      type="submit"
+                      class="rounded-2xl border border-slate-200 bg-white/60 px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-white dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100 dark:hover:bg-slate-950/60"
+                      title="{{ 'Вернуть из архива' if archived_view else 'В архив' }}"
+                    >
+                      <span class="inline-flex items-center gap-2">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 8v13H3V8" />
+                          <path d="M1 3h22v5H1z" />
+                          <path d="M10 12h4" />
+                        </svg>
+                        {{ 'Вернуть' if archived_view else 'Архив' }}
+                      </span>
+                    </button>
+                  </form>
+
                   <button
                     type="button"
                     data-copy-payload='{{ {"title": n.title, "content": n.content}|tojson }}'
@@ -133,9 +207,9 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="mt-4 rounded-3xl border border-slate-800 bg-slate-900/20 p-6 text-slate-300">
+        <div class="mt-4 rounded-3xl border border-slate-200 bg-white/70 p-6 text-slate-900 dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-100">
           <div class="text-sm font-medium">Пока нет заметок</div>
-          <div class="mt-1 text-xs text-slate-400">Создай первую — форма слева.</div>
+          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Создай первую — форма слева.</div>
         </div>
       {% endif %}
     </section>

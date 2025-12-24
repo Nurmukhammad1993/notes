@@ -3,15 +3,12 @@
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   function getTheme() {
-    const stored = (() => {
-      try {
-        return localStorage.getItem("theme");
-      } catch {
-        return null;
-      }
-    })();
-    if (stored === "dark" || stored === "light") return stored;
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    try {
+      const stored = localStorage.getItem("theme");
+      if (stored === "dark" || stored === "light") return stored;
+    } catch (e) {}
+    const prefersDark =
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     return prefersDark ? "dark" : "light";
   }
 
@@ -20,7 +17,8 @@
     document.documentElement.classList.toggle("dark", isDark);
     try {
       localStorage.setItem("theme", theme);
-    } catch {}
+    } catch (e) {}
+
     const btn = qs("#theme-toggle");
     const label = qs("#theme-toggle-label");
     if (label) label.textContent = isDark ? "Тёмная" : "Светлая";
@@ -125,12 +123,29 @@
     if (params.get("updated") === "1") toast("Заметка обновлена", "success");
     if (params.get("deleted") === "1") toast("Заметка удалена", "danger");
 
-    if (params.has("created") || params.has("updated") || params.has("deleted")) {
+    if (params.get("pinned") === "1") toast("Закреплено", "success");
+    if (params.get("unpinned") === "1") toast("Откреплено", "info");
+    if (params.get("archived_action") === "1") toast("Перемещено в архив", "info");
+    if (params.get("unarchived_action") === "1") toast("Возвращено из архива", "success");
+
+    if (
+      params.has("created") ||
+      params.has("updated") ||
+      params.has("deleted") ||
+      params.has("pinned") ||
+      params.has("unpinned") ||
+      params.has("archived_action") ||
+      params.has("unarchived_action")
+    ) {
       // Clean URL without reloading
       const url = new URL(window.location.href);
       url.searchParams.delete("created");
       url.searchParams.delete("updated");
       url.searchParams.delete("deleted");
+      url.searchParams.delete("pinned");
+      url.searchParams.delete("unpinned");
+      url.searchParams.delete("archived_action");
+      url.searchParams.delete("unarchived_action");
       window.history.replaceState({}, "", url);
     }
   }

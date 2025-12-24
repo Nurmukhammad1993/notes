@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mx-auto max-w-md">
+    <div class="rounded-3xl border border-slate-200 bg-white/70 p-6 backdrop-blur dark:border-slate-800 dark:bg-slate-900/40">
+      <h2 class="text-base font-semibold">Вход</h2>
+      <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">Войдите, чтобы видеть свои заметки.</p>
+
+      {% if error %}
+        <div class="mt-3 rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-900 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-50">{{ error }}</div>
+      {% endif %}
+
+      <form class="mt-4 grid gap-3" method="post" action="/login" data-ctrl-enter-submit="1">
+        <div>
+          <label class="text-xs font-medium text-slate-700 dark:text-slate-300">Логин</label>
+          <input
+            name="username"
+            required
+            value="{{ username or '' }}"
+            class="mt-1 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent focus:border-slate-300 focus:ring-indigo-500/30 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-indigo-500/40"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-700 dark:text-slate-300">Пароль</label>
+          <input
+            name="password"
+            type="password"
+            required
+            class="mt-1 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent focus:border-slate-300 focus:ring-indigo-500/30 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-indigo-500/40"
+          />
+        </div>
+        <button class="rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500" type="submit">Войти</button>
+      </form>
+
+      <div class="mt-4 text-xs text-slate-600 dark:text-slate-300">
+        Нет аккаунта? <a class="font-medium text-indigo-700 hover:underline dark:text-indigo-300" href="/register">Регистрация</a>
+      </div>
+      <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+        Супер пользователь: <span class="font-medium">admin</span> / <span class="font-medium">admin</span>
+      </div>
+    </div>
+  </div>
+{% endblock %}

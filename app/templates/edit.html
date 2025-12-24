@@ -11,20 +11,56 @@
         </p>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Ctrl+Enter для сохранения</p>
       </div>
-      <form method="post" action="/notes/{{ note.id }}/delete" onsubmit="return confirm('Удалить заметку?');">
-        <button type="submit" class="rounded-2xl bg-rose-600/90 px-4 py-2 text-sm font-semibold hover:bg-rose-600">
-          <span class="inline-flex items-center gap-2">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M19 6l-1 14H6L5 6" />
-              <path d="M10 11v6" />
-              <path d="M14 11v6" />
-            </svg>
-            Удалить
-          </span>
-        </button>
-      </form>
+      <div class="flex items-center gap-2">
+        <form method="post" action="/notes/{{ note.id }}/pin">
+          <button
+            type="submit"
+            class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-semibold hover:bg-white dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-950/60"
+            title="{{ 'Открепить' if note.pinned else 'Закрепить' }}"
+          >
+            <span class="inline-flex items-center gap-2">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 9l7 7-4 4-7-7" />
+                <path d="M3 21l6-6" />
+                <path d="M8 8l8 8" />
+              </svg>
+              {{ 'Открепить' if note.pinned else 'Закрепить' }}
+            </span>
+          </button>
+        </form>
+
+        <form method="post" action="/notes/{{ note.id }}/archive">
+          <button
+            type="submit"
+            class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-semibold hover:bg-white dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-950/60"
+            title="{{ 'Вернуть из архива' if note.archived else 'В архив' }}"
+          >
+            <span class="inline-flex items-center gap-2">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 8v13H3V8" />
+                <path d="M1 3h22v5H1z" />
+                <path d="M10 12h4" />
+              </svg>
+              {{ 'Вернуть' if note.archived else 'Архив' }}
+            </span>
+          </button>
+        </form>
+
+        <form method="post" action="/notes/{{ note.id }}/delete" onsubmit="return confirm('Удалить заметку?');">
+          <button type="submit" class="rounded-2xl bg-rose-600/90 px-4 py-2 text-sm font-semibold hover:bg-rose-600">
+            <span class="inline-flex items-center gap-2">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+              Удалить
+            </span>
+          </button>
+        </form>
+      </div>
     </div>
 
     <form class="mt-5 grid gap-3" method="post" action="/notes/{{ note.id }}" data-ctrl-enter-submit="1">
