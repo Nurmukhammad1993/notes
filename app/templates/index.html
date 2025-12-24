@@ -68,6 +68,13 @@
         </div>
 
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div
+            data-weather-tashkent
+            class="rounded-2xl border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium text-slate-900 backdrop-blur dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100"
+            title="Погода в Ташкенте (Open-Meteo)"
+          >
+            Ташкент: <span data-weather-value class="text-slate-600 dark:text-slate-300">загрузка…</span>
+          </div>
           <form method="get" action="/" class="flex items-center gap-2">
             {% if archived_view %}
               <input type="hidden" name="archived" value="1" />

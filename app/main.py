@@ -3,6 +3,9 @@ from __future__ import annotations
 from collections.abc import Generator
 from datetime import datetime, timezone
 import os
+import time
+from typing import Any
+from urllib.request import urlopen
 from urllib.parse import parse_qsl, urlencode, urlparse
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -24,6 +27,89 @@ app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, same_site="lax")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+
+_WEATHER_CACHE: dict[str, Any] = {"ts": 0.0, "data": None}
+
+
+def _weather_code_label(code: int | None) -> str:
+    if code is None:
+        return ""
+    # Open-Meteo weather codes: https://open-meteo.com/en/docs
+    if code == 0:
+        return "Ясно"
+    if code in (1, 2, 3):
+        return "Облачно"
+    if code in (45, 48):
+        return "Туман"
+    if code in (51, 53, 55, 56, 57):
+        return "Морось"
+    if code in (61, 63, 65, 66, 67):
+        return "Дождь"
+    if code in (71, 73, 75, 77):
+        return "Снег"
+    if code in (80, 81, 82):
+        return "Ливень"
+    if code in (85, 86):
+        return "Снегопад"
+    if code in (95, 96, 99):
+        return "Гроза"
+    return ""
+
+
+@app.get("/weather/tashkent")
+def tashkent_weather() -> JSONResponse:
+    # Cache for 5 minutes to avoid hammering the provider
+    now = time.time()
+    cached_ts = float(_WEATHER_CACHE.get("ts") or 0.0)
+    cached_data = _WEATHER_CACHE.get("data")
+    if cached_data and (now - cached_ts) < 300:
+        return JSONResponse(content=cached_data)
+
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        "?latitude=41.3111&longitude=69.2797"
+        "&current_weather=true"
+        "&timezone=Asia%2FTashkent"
+    )
+
+    try:
+        import json
+
+        with urlopen(url, timeout=7) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        current = payload.get("current_weather") or {}
+
+        temperature = current.get("temperature")
+        windspeed = current.get("windspeed")
+        weathercode = current.get("weathercode")
+        result = {
+            "city": "Ташкент",
+            "temperature_c": temperature,
+            "wind_kmh": windspeed,
+            "weather_code": weathercode,
+            "summary": _weather_code_label(int(weathercode)) if weathercode is not None else "",
+            "time": current.get("time"),
+            "source": "open-meteo",
+        }
+    except Exception:
+        # Keep UI simple: return a stable shape with ok=false
+        result = {
+            "ok": False,
+            "city": "Ташкент",
+            "temperature_c": None,
+            "wind_kmh": None,
+            "weather_code": None,
+            "summary": "",
+            "time": None,
+            "source": "open-meteo",
+        }
+        return JSONResponse(content=result, status_code=200)
+
+    result["ok"] = True
+    _WEATHER_CACHE["ts"] = now
+    _WEATHER_CACHE["data"] = result
+    return JSONResponse(content=result)
 
 
 def _redirect_back_with_params(request: Request, default: str, **params: str) -> RedirectResponse:

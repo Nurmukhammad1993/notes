@@ -244,6 +244,38 @@
     });
   }
 
+  async function initWeatherTashkent() {
+    const host = qs("[data-weather-tashkent]");
+    if (!host) return;
+    const valueEl = qs("[data-weather-value]", host);
+    if (!valueEl) return;
+
+    try {
+      const resp = await fetch("/weather/tashkent", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      const data = await resp.json();
+      if (!data || data.ok !== true) {
+        valueEl.textContent = "недоступно";
+        return;
+      }
+
+      const t = data.temperature_c;
+      const w = data.wind_kmh;
+      const label = (data.summary || "").toString().trim();
+
+      const parts = [];
+      if (typeof t === "number") parts.push(`${Math.round(t)}°C`);
+      if (label) parts.push(label);
+      if (typeof w === "number") parts.push(`ветер ${Math.round(w)} км/ч`);
+
+      valueEl.textContent = parts.length ? parts.join(" · ") : "—";
+    } catch (e) {
+      valueEl.textContent = "недоступно";
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initThemeToggle();
     initAutosize();
@@ -253,5 +285,6 @@
     initCopyButtons();
     initClearNewNote();
     initImportJson();
+    initWeatherTashkent();
   });
 })();
